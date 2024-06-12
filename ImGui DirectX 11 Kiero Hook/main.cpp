@@ -49,24 +49,27 @@ GetCStartGameCommand CStartGameCommandFunc;
 typedef LPVOID(__fastcall* GetCCommand)(__int64 a1);
 GetCCommand GetCCommandFunc;
 
+//Hook Pointers
 void* pCSession = nullptr;
 void* pCAddPlayer = nullptr;
-int KeyArray[] = { 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39 };
+
+//ImGui Vars
 char TagBuffer[8];
 bool bDebugOutputEnabled = true;
 bool bMaxNameSize = false;
 bool bJoinAsGhost = false;
-bool bFakePname = false;
-bool bEnabletdebug = false;
 bool bMenuOpen = true;
 bool bCE = false;
+bool lala = false;
+
+//Add Player Vars
 int iMyMachineID;
 int iMachineIDFake = 50;
 __int64 iParadoxSocialID = 0;
-int dUnknown;
+
+//Add Player Global Vars
 DWORD* dT;
 int dM;
-bool lala = false;
 int fM;
 __int64 dP;
 CString* dN;
@@ -75,6 +78,14 @@ __int64 dReason;
 CString* empty = new CString;
 
 uintptr_t GameBase = (uintptr_t)GetModuleHandleA("hoi4.exe");
+
+
+
+template <typename T>
+T ReadMemory(uintptr_t address)
+{
+	return *reinterpret_cast<T*>(address);
+}
 
 void PatchMemory(uintptr_t address, unsigned char* patch, DWORD size)
 {
@@ -90,24 +101,18 @@ void MultiplayerLobbyHack()
 
 	uintptr_t address = NULL /*address*/;
 
-	unsigned char patch[] = { NULL /*bytes*/};
+	unsigned char patch[] = { NULL /*bytes*/ };
 
 	void* newmem = VirtualAlloc(nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (newmem != nullptr)
 	{
-		DWORD relativeOffset = (NULL /*address*/) - (address + sizeof(patch));
+		DWORD relativeOffset = (NULL /*address*/)-(address + sizeof(patch));
 		memcpy(newmem, patch, sizeof(patch));
 		*(BYTE*)((uintptr_t)newmem) = NULL /*bytes*/;
 		*(BYTE*)((uintptr_t)newmem + 1) = NULL /*bytes*/;
 		*(DWORD*)((uintptr_t)newmem + 2) = relativeOffset;
 		PatchMemory(address, (unsigned char*)newmem, sizeof(patch));
 	}
-}
-
-template <typename T>
-T ReadMemory(uintptr_t address)
-{
-	return *reinterpret_cast<T*>(address);
 }
 
 uintptr_t OffsetCalculator(uintptr_t baseAddress, const std::vector<uintptr_t>& offsets)
@@ -120,15 +125,6 @@ uintptr_t OffsetCalculator(uintptr_t baseAddress, const std::vector<uintptr_t>& 
 	}
 	return address;
 }
-
-
-
-
-
-
-
-
-
 
 void ChangeIntAddressValue(uintptr_t bAddr, uintptr_t bOff, int Tag)
 {
@@ -170,16 +166,6 @@ void ChangeByteAddressValue(uintptr_t addr)
 	
 	VirtualProtect(pValue, sizeof(BYTE), oldProtect, &oldProtect);
 }
-
-
-
-
-
-
-
-
-
-
 
 void InitImGui()
 {
@@ -244,18 +230,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			io.MouseDown[0] = false;
 			io.MouseClicked[0] = false;
 		}
-
-		for (int i : KeyArray)
-		{
-			if (GetAsyncKeyState(i) & 1)
-			{
-				io.AddInputCharacter(i);
-			}
-		}
-
-
-
-
 
 		ImGui_ImplDX11_NewFrame();
 		ImGui_ImplWin32_NewFrame();
